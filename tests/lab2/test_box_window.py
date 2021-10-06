@@ -7,16 +7,16 @@ from lab2.box_window import BoxWindow
 def test_raise_type_error_when_something_is_called():
     with pytest.raises(TypeError):
         # call_something_that_raises_TypeError()
-        raise TypeError()
+        pass
 
 
 @pytest.mark.parametrize(
     "bounds, expected",
     [
-        (np.array([[2.5, 2.5]]), "BoxWindow: [2.5, 2.5]"),
-        (np.array([[0, 5], [0, 5]]), "BoxWindow: [0, 5] x [0, 5]"),
+        ([[2.5, 2.5]], "BoxWindow: [2.5, 2.5]"),
+        ([[0, 5], [0, 5]], "BoxWindow: [0, 5] x [0, 5]"),
         (
-            np.array([[0, 5], [-1.45, 3.14], [-10, 10]]),
+            [[0, 5], [-1.45, 3.14], [-10, 10]],
             "BoxWindow: [0, 5] x [-1.45, 3.14] x [-10, 10]",
         ),
     ],
@@ -26,22 +26,30 @@ def test_box_string_representation(bounds, expected):
 
 
 @pytest.fixture
-def box_2d_05():
-    return BoxWindow(np.array([[0, 5], [0, 5]]))
+def example_box_window():
+    bounds = [[-5, 5], [-5, 5]]
+    return BoxWindow(bounds)
 
 
 @pytest.mark.parametrize(
-    "point, expected",
+    "points, expected", [([[0, 0]], [True]), ([[-1, 5],[1, 2]], [True,True]), ( [[5, 6],[1, 2],[5,6]], [False,True,False]),],
+)
+def test_indicator_function(example_box_window, points, expected):
+    box = example_box_window
+    assert (box.indicator_function(points)) == expected
+
+
+@pytest.mark.parametrize(
+    "box, expected",
     [
-        (np.array([0, 0]), True),
-        (np.array([2.5, 2.5]), True),
-        (np.array([-1, 5]), False),
-        (np.array([10, 3]), False),
+        (BoxWindow([[0, 1]]), [0.5]),
+        (BoxWindow([[1, 2], [0, 2]]), [1.5, 1]),
+        (BoxWindow([[0, -4], [4, 5], [1, 3]]), [-2, 4.5, 2]),
+        (BoxWindow([[1, 2], [0, 2], [-4, 4], [1, 2]]), [1.5, 1, 0, 1.5]),
     ],
 )
-def test_indicator_function_box_2d(box_2d_05, point, expected):
-    is_in = box_2d_05.indicator_function(point)
-    assert is_in == expected
+def test_center(box, expected):
+    assert box.center() == expected
 
 
 # ================================
